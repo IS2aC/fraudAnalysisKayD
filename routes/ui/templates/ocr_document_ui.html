@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocAuth OCR - Vérification intelligente</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: white; padding: 20px 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
+        .logo { width: 50px; height: 50px; background: linear-gradient(135deg, #e67e22, #d35400); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
+        .header-text h1 { font-size: 24px; font-weight: 600; }
+        .header-text p { font-size: 14px; color: #999; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .section { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #333; }
+        
+        /* Menu et Upload */
+        .document-type { border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.3s ease; }
+        .document-type:hover { border-color: #e67e22; background: #fff8f0; }
+        .doc-icon { width: 40px; height: 40px; background: #fff3e6; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #e67e22; font-size: 20px; }
+        .doc-type-text { display: flex; flex-direction: column; margin-left: 12px; }
+        .doc-label { font-size: 11px; color: #999; text-transform: uppercase; }
+        .doc-name { font-size: 16px; font-weight: 500; }
+        .doc-option { padding: 12px 15px; cursor: pointer; transition: background 0.2s; }
+        .doc-option:hover { background-color: #fff8f0; color: #e67e22; }
+        
+        .upload-area { border: 2px dashed #d0d0d0; border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        .upload-area.dragover { border-color: #e67e22; background: #fff8f0; transform: scale(1.01); }
+        .upload-icon { width: 80px; height: 80px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; color: #999; }
+        .upload-link { color: #e67e22; text-decoration: none; font-weight: 500; }
+        .file-input { display: none; }
+        
+        .analyze-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #e67e22, #d35400); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .analyze-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Résultats */
+        .result-placeholder { text-align: center; padding: 80px 20px; }
+        .result-content { display: none; }
+        .result-content.show { display: block; }
+        .score-circle { width: 180px; height: 180px; margin: 0 auto 20px; position: relative; }
+        .score-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 700; color: #27ae60; }
+        
+        .verification-details { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0; }
+        
+        /* Style Justification */
+        .justify-box { margin-top: 20px; padding: 15px; background: #fff; border-left: 4px solid #e67e22; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .justify-title { font-size: 12px; font-weight: bold; color: #e67e22; text-transform: uppercase; margin-bottom: 5px; }
+        .justify-text { font-size: 14px; line-height: 1.5; color: #444; font-style: italic; }
+
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .status-badge.success { background: #d4edda; color: #155724; }
+        .status-badge.warning { background: #fff3cd; color: #856404; }
+        
+        .file-preview { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; align-items: center; gap: 12px; }
+        .file-preview.show { display: flex; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading { animation: spin 1s linear infinite; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">🛡️</div>
+        <div class="header-text">
+            <h1>DocAuth OCR</h1>
+            <p>Vérification intelligente de documents</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div>
+            <div class="section">
+                <h2 class="section-title">1. Sélectionner le type de document</h2>
+                <div style="position: relative;">
+                    <div class="document-type" id="docTypeSelector">
+                        <div style="display: flex; align-items: center;">
+                            <div class="doc-icon">💳</div>
+                            <div class="doc-type-text">
+                                <span class="doc-label">TYPE DE DOCUMENT</span>
+                                <span class="doc-name" id="selectedDocType">Carte Nationale d'Identité</span>
+                            </div>
+                        </div>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div id="docTypeMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-top: 5px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        {% for doc in type_document %}
+                            <div class="doc-option"
+                                data-value="{{ doc.value }}">
+                                {{ doc.value }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: 20px;">
+                <h2 class="section-title">2. Téléverser le document</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Glissez-déposez votre document</div>
+                    <div>ou <a href="#" class="upload-link" id="browseLink">parcourez vos fichiers</a></div>
+                    <input type="file" id="fileInput" class="file-input" accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+                <div class="file-preview" id="filePreview">
+                    <div class="doc-icon" style="background: #e67e22; color: white;">📄</div>
+                    <div style="flex: 1;">
+                        <div id="fileName" style="font-size: 14px; font-weight: 500;"></div>
+                        <div id="fileSize" style="font-size: 12px; color: #999;"></div>
+                    </div>
+                    <button id="removeFile" style="background: none; border: none; color: #999; cursor: pointer; font-size: 18px;">✕</button>
+                </div>
+                <button class="analyze-btn" id="analyzeBtn" disabled>
+                    <span id="btnIcon">🔍</span>
+                    <span id="btnText">Analyser le document</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">3. Résultat de la vérification</h2>
+            <div class="result-placeholder" id="resultPlaceholder">
+                <div class="upload-icon">🔍</div>
+                <div style="color: #999;">L'analyse apparaîtra ici après le téléversement.</div>
+            </div>
+
+            <div class="result-content" id="resultContent">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div class="score-circle">
+                        <svg width="180" height="180" style="transform: rotate(-90deg);">
+                            <circle cx="90" cy="90" r="80" stroke="#e0e0e0" stroke-width="12" fill="none"/>
+                            <circle id="progressCircle" cx="90" cy="90" r="80" stroke="#27ae60" stroke-width="12" fill="none"
+                                stroke-dasharray="502.4" stroke-dashoffset="502.4" stroke-linecap="round"
+                                style="transition: stroke-dashoffset 1.5s ease-in-out"/>
+                        </svg>
+                        <div class="score-value" id="scoreValue">0%</div>
+                    </div>
+                    <div style="font-weight: 500; color: #666;">Indice de confiance</div>
+                </div>
+
+                <div class="verification-details">
+                    <div class="detail-row">
+                        <span>Statut</span>
+                        <span id="statusBadgeContainer"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span style="color: #666;">Type détecté</span>
+                        <span id="resDocType" style="font-weight: 500;">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span style="color: #666;">Date et Heure</span>
+                        <span id="resDate" style="font-weight: 500;">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span style="color: #666;">Vérifications</span>
+                        <span id="resChecks" style="font-weight: 500;">-</span>
+                    </div>
+                </div>
+                <br>
+                <div class="justify-box">
+                    <div class="justify-title"><pre>Justification de l'analyse</pre></div>
+                    <div class="justify-text" id="resJustify">Chargement de la justification...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const selectedDocType = document.getElementById('selectedDocType');
+        let selectedFile = null;
+
+        // Dropdown
+        document.getElementById('docTypeSelector').addEventListener('click', () => {
+            const menu = document.getElementById('docTypeMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.querySelectorAll('.doc-option').forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                selectedDocType.textContent = e.target.textContent;
+                document.getElementById('docTypeMenu').style.display = 'none';
+            });
+        });
+
+        // Upload
+        document.getElementById('browseLink').addEventListener('click', (e) => { e.preventDefault(); fileInput.click(); });
+        document.getElementById('uploadArea').addEventListener('click', (e) => { if(e.target.id !== 'browseLink') fileInput.click(); });
+
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+            document.getElementById('filePreview').classList.add('show');
+            analyzeBtn.disabled = false;
+        }
+
+        document.getElementById('removeFile').addEventListener('click', () => {
+            selectedFile = null;
+            document.getElementById('filePreview').classList.remove('show');
+            analyzeBtn.disabled = true;
+            document.getElementById('resultContent').classList.remove('show');
+            document.getElementById('resultPlaceholder').style.display = 'block';
+        });
+
+        // Analyse
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            analyzeBtn.disabled = true;
+            document.getElementById('btnIcon').innerHTML = '⏳';
+            document.getElementById('btnIcon').classList.add('loading');
+            document.getElementById('btnText').textContent = 'Analyse en cours...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('type_document', selectedDocType.textContent);
+
+            try {
+                const response = await fetch('/ai-api/ocr_document', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) throw new Error('Erreur');
+                const data = await response.json();
+                updateUI(data.model_response);
+            } catch (error) {
+                alert("Erreur API.");
+            } finally {
+                analyzeBtn.disabled = false;
+                document.getElementById('btnIcon').innerHTML = '🔍';
+                document.getElementById('btnIcon').classList.remove('loading');
+                document.getElementById('btnText').textContent = 'Analyser le document';
+            }
+        });
+
+        function updateUI(res) {
+            document.getElementById('resultPlaceholder').style.display = 'none';
+            document.getElementById('resultContent').classList.add('show');
+
+            // Score et Cercle
+            const score = res.score;
+            const circle = document.getElementById('progressCircle');
+            const offset = 502.4 - (score / 100) * 502.4;
+            circle.style.strokeDashoffset = offset;
+            
+            const color = score > 80 ? '#27ae60' : (score > 50 ? '#f39c12' : '#e74c3c');
+            circle.style.stroke = color;
+            document.getElementById('scoreValue').style.color = color;
+            animateValue("scoreValue", 0, score, 1500);
+
+            // Badge
+            const badge = document.getElementById('statusBadgeContainer');
+            badge.innerHTML = score >= 80 
+                ? `<span class="status-badge success">✓ Authentique</span>`
+                : `<span class="status-badge warning">⚠️ À vérifier</span>`;
+
+            // Textes
+            document.getElementById('resDocType').textContent = res.type_document;
+            document.getElementById('resDate').textContent = res.date_analyse;
+            document.getElementById('resChecks').textContent = res.verification_number + ' points de contrôle';
+            
+            // JUSTIFICATION (La modification clé est ici)
+            document.getElementById('resJustify').textContent = res.justify || "Aucune justification fournie.";
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start) + "%";
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+</html>
