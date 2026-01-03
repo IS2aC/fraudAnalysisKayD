@@ -1,4 +1,28 @@
-fastapi
-uvicorn
+pypdfium2
 python-multipart
-jinja2
+pillow
+python-dotenv
+# --- LlamaIndex core ---
+llama-index==0.14.10
+llama-index-core==0.14.10
+llama-index-embeddings-huggingface==0.6.1
+llama-index-llms-openai-like==0.5.3
+
+# --- Embeddings ---
+sentence-transformers==5.1.2
+transformers==4.57.3
+torch==2.9.1
+huggingface-hub==0.36.0
+
+# --- Utils ---
+numpy==2.2.6
+tqdm==4.67.1
+regex==2025.11.3
+pydantic==2.12.5
+typing_extensions==4.15.0
+
+# --- API (si FastAPI) ---
+fastapi==0.115.6
+uvicorn==0.32.1
+python-dotenv==1.2.1
+requests==2.32.5

@@ -7,15 +7,111 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
-        .header { background: white; padding: 20px 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
-        .logo { width: 50px; height: 50px; background: linear-gradient(135deg, #e67e22, #d35400); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
-        .header-text h1 { font-size: 24px; font-weight: 600; }
-        .header-text p { font-size: 14px; color: #999; }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: #e67e22;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(230, 126, 34, 0.2);
+        }
+
+        .logo-shield {
+            width: 28px;
+            height: 28px;
+            border: 3px solid white;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .logo-shield::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .logo-text h1 span {
+            color: #f97316;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: #f97316;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* Container */
         .container { max-width: 1400px; margin: 0 auto; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         .section { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .section-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #333; }
-        
-        /* Menu et Upload */
+
+        /* Document Type Selector */
         .document-type { border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.3s ease; }
         .document-type:hover { border-color: #e67e22; background: #fff8f0; }
         .doc-icon { width: 40px; height: 40px; background: #fff3e6; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #e67e22; font-size: 20px; }
@@ -24,54 +120,104 @@
         .doc-name { font-size: 16px; font-weight: 500; }
         .doc-option { padding: 12px 15px; cursor: pointer; transition: background 0.2s; }
         .doc-option:hover { background-color: #fff8f0; color: #e67e22; }
-        
+
+        /* Upload Area */
         .upload-area { border: 2px dashed #d0d0d0; border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
         .upload-area.dragover { border-color: #e67e22; background: #fff8f0; transform: scale(1.01); }
         .upload-icon { width: 80px; height: 80px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; color: #999; }
         .upload-link { color: #e67e22; text-decoration: none; font-weight: 500; }
         .file-input { display: none; }
-        
+
         .analyze-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #e67e22, #d35400); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .analyze-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* Résultats */
+        .file-preview { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; align-items: center; gap: 12px; }
+        .file-preview.show { display: flex; }
+
+        /* Results */
         .result-placeholder { text-align: center; padding: 80px 20px; }
         .result-content { display: none; }
         .result-content.show { display: block; }
-        .score-circle { width: 180px; height: 180px; margin: 0 auto 20px; position: relative; }
-        .score-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 700; color: #27ae60; }
-        
-        .verification-details { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px; }
-        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0; }
-        
-        /* Style Justification */
-        .justify-box { margin-top: 20px; padding: 15px; background: #fff; border-left: 4px solid #e67e22; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .justify-title { font-size: 12px; font-weight: bold; color: #e67e22; text-transform: uppercase; margin-bottom: 5px; }
-        .justify-text { font-size: 14px; line-height: 1.5; color: #444; font-style: italic; }
 
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-        .status-badge.success { background: #d4edda; color: #155724; }
-        .status-badge.warning { background: #fff3cd; color: #856404; }
-        
-        .file-preview { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; align-items: center; gap: 12px; }
-        .file-preview.show { display: flex; }
-        
+        /* Status Card */
+        .status-card { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border: 1px solid #fecaca; }
+        .status-card.success { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-color: #bbf7d0; }
+        .status-header { display: flex; align-items: center; gap: 16px; }
+        .status-icon { width: 56px; height: 56px; border-radius: 12px; background: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; flex-shrink: 0; }
+        .status-icon.success { background: #16a34a; }
+        .status-info { flex: 1; }
+        .status-title { font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 4px 0; }
+        .status-subtitle, .status-subverifnumber { font-size: 14px; color: #64748b; margin: 0; }
+        .confidence-badge { background: white; border-radius: 12px; padding: 12px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .confidence-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .confidence-value { font-size: 24px; font-weight: 700; color: #dc2626; }
+        .confidence-value.success { color: #16a34a; }
+
+        /* Confidence Level Bar */
+        .confidence-section { margin-bottom: 24px; }
+        .confidence-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .confidence-percent { font-size: 16px; font-weight: 600; color: #1e293b; }
+        .confidence-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; position: relative; }
+        .confidence-fill { height: 100%; background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); border-radius: 4px; width: 0%; transition: width 1.5s ease-out; }
+        .confidence-fill.success { background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%); }
+
+        /* Extracted Information */
+        .extracted-section { background: #f8fafc; border-radius: 12px; padding: 20px; }
+        .extracted-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .extracted-title { font-size: 16px; font-weight: 600; color: #1e293b; }
+        .info-grid { display: flex; flex-direction: column; gap: 16px; }
+        .info-item { background: white; border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 14px; border: 1px solid #e2e8f0; transition: all 0.2s ease; }
+        .info-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .info-icon { width: 44px; height: 44px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .info-content { flex: 1; }
+        .info-label { font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+        .info-value { font-size: 15px; color: #1e293b; font-weight: 600; }
+        .info-status { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+        .info-status.success { background: #dcfce7; color: #16a34a; }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading { animation: spin 1s linear infinite; display: inline-block; }
+
+        @media (max-width: 1024px) {
+            .container { grid-template-columns: 1fr; }
+            header { padding: 1rem 1.5rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo">🛡️</div>
-        <div class="header-text">
-            <h1>DocAuth OCR</h1>
-            <p>Vérification intelligente de documents</p>
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">
+                <div class="logo-shield"></div>
+            </div>
+            <div class="logo-text">
+                <h1>Risk<span>Guard</span></h1>
+                <p>Fraud Detection</p>
+            </div>
         </div>
-    </div>
+        <div class="header-actions">
+            <button class="icon-btn" aria-label="Notifications">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="notification-badge"></span>
+            </button>
+            <button class="icon-btn" aria-label="User profile">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+    </header>
 
     <div class="container">
+        <!-- Left Column -->
         <div>
+            <!-- Section 1: Document Type -->
             <div class="section">
                 <h2 class="section-title">1. Sélectionner le type de document</h2>
                 <div style="position: relative;">
@@ -86,16 +232,15 @@
                         <span class="dropdown-arrow">▼</span>
                     </div>
                     <div id="docTypeMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-top: 5px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        {% for doc in type_document %}
-                            <div class="doc-option"
-                                data-value="{{ doc.value }}">
-                                {{ doc.value }}
-                            </div>
-                        {% endfor %}
+                        <div class="doc-option" data-value="Carte Nationale d'Identité">Carte Nationale d'Identité</div>
+                        <div class="doc-option" data-value="Passeport">Passeport</div>
+                        <div class="doc-option" data-value="Permis de Conduire">Permis de Conduire</div>
+                        <div class="doc-option" data-value="Carte de Séjour">Carte de Séjour</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Section 2: Upload -->
             <div class="section" style="margin-top: 20px;">
                 <h2 class="section-title">2. Téléverser le document</h2>
                 <div class="upload-area" id="uploadArea">
@@ -119,6 +264,7 @@
             </div>
         </div>
 
+        <!-- Right Column -->
         <div class="section">
             <h2 class="section-title">3. Résultat de la vérification</h2>
             <div class="result-placeholder" id="resultPlaceholder">
@@ -127,41 +273,118 @@
             </div>
 
             <div class="result-content" id="resultContent">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div class="score-circle">
-                        <svg width="180" height="180" style="transform: rotate(-90deg);">
-                            <circle cx="90" cy="90" r="80" stroke="#e0e0e0" stroke-width="12" fill="none"/>
-                            <circle id="progressCircle" cx="90" cy="90" r="80" stroke="#27ae60" stroke-width="12" fill="none"
-                                stroke-dasharray="502.4" stroke-dashoffset="502.4" stroke-linecap="round"
-                                style="transition: stroke-dashoffset 1.5s ease-in-out"/>
-                        </svg>
-                        <div class="score-value" id="scoreValue">0%</div>
+                <!-- Status Card -->
+                <div class="status-card" id="statusCard">
+                    <div class="status-header">
+                        <div class="status-icon" id="statusIcon">✓</div>
+                        <div class="status-info">
+                            <h3 class="status-title" id="statusTitle">Document Authentique</h3>
+                            <p class="status-subtitle" id="statusSubtitle">Aucune anomalie détectée</p>
+                            <p class="status-subverifnumber" id="statusVerifNumber">3 verifications Réalisées</p>
+                        </div>
                     </div>
-                    <div style="font-weight: 500; color: #666;">Indice de confiance</div>
+                    <div class="confidence-badge" id="confidenceBadge">
+                        <span class="confidence-label">confiance</span>
+                        <span class="confidence-value" id="confidenceValue">95%</span>
+                    </div>
                 </div>
 
-                <div class="verification-details">
-                    <div class="detail-row">
-                        <span>Statut</span>
-                        <span id="statusBadgeContainer"></span>
+                <!-- Confidence Level -->
+                <div class="confidence-section">
+                    <div class="confidence-header">
+                        <span style="font-weight: 500; color: #64748b;">Niveau de confiance</span>
+                        <span class="confidence-percent" id="confidencePercent">95%</span>
                     </div>
-                    <div class="detail-row">
-                        <span style="color: #666;">Type détecté</span>
-                        <span id="resDocType" style="font-weight: 500;">-</span>
-                    </div>
-                    <div class="detail-row">
-                        <span style="color: #666;">Date et Heure</span>
-                        <span id="resDate" style="font-weight: 500;">-</span>
-                    </div>
-                    <div class="detail-row">
-                        <span style="color: #666;">Vérifications</span>
-                        <span id="resChecks" style="font-weight: 500;">-</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill"></div>
                     </div>
                 </div>
-                <br>
-                <div class="justify-box">
-                    <div class="justify-title"><pre>Justification de l'analyse</pre></div>
-                    <div class="justify-text" id="resJustify">Chargement de la justification...</div>
+
+                <!-- Extracted Information -->
+                <div class="extracted-section">
+                    <div class="extracted-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span class="extracted-title">Informations extraites</span>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Nom </div>
+                                <div class="info-value" id="infoName">-</div>
+                            </div>
+                            <div class="info-status success">✓</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Prenoms </div>
+                                <div class="info-value" id="infoSurname">-</div>
+                            </div>
+                            <div class="info-status success">✓</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Date de naissance</div>
+                                <div class="info-value" id="infoBirth">-</div>
+                            </div>
+                            <div class="info-status success">✓</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Numéro de document</div>
+                                <div class="info-value" id="infoNumber">-</div>
+                            </div>
+                            <div class="info-status success">✓</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Date d'expiration</div>
+                                <div class="info-value" id="infoExpiry">-</div>
+                            </div>
+                            <div class="info-status success">✓</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -173,7 +396,7 @@
         const selectedDocType = document.getElementById('selectedDocType');
         let selectedFile = null;
 
-        // Dropdown
+        // Document Type Dropdown
         document.getElementById('docTypeSelector').addEventListener('click', () => {
             const menu = document.getElementById('docTypeMenu');
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
@@ -186,9 +409,41 @@
             });
         });
 
-        // Upload
-        document.getElementById('browseLink').addEventListener('click', (e) => { e.preventDefault(); fileInput.click(); });
-        document.getElementById('uploadArea').addEventListener('click', (e) => { if(e.target.id !== 'browseLink') fileInput.click(); });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#docTypeSelector') && !e.target.closest('#docTypeMenu')) {
+                document.getElementById('docTypeMenu').style.display = 'none';
+            }
+        });
+
+        // File Upload Handlers
+        document.getElementById('browseLink').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            fileInput.click(); 
+        });
+
+        document.getElementById('uploadArea').addEventListener('click', (e) => { 
+            if(e.target.id !== 'browseLink') fileInput.click(); 
+        });
+
+        // Drag and Drop
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if(e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
 
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) handleFile(e.target.files[0]);
@@ -202,15 +457,17 @@
             analyzeBtn.disabled = false;
         }
 
-        document.getElementById('removeFile').addEventListener('click', () => {
+        document.getElementById('removeFile').addEventListener('click', (e) => {
+            e.stopPropagation();
             selectedFile = null;
+            fileInput.value = '';
             document.getElementById('filePreview').classList.remove('show');
             analyzeBtn.disabled = true;
             document.getElementById('resultContent').classList.remove('show');
             document.getElementById('resultPlaceholder').style.display = 'block';
         });
 
-        // Analyse
+        // Analyze Button
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
@@ -228,11 +485,14 @@
                     method: 'POST',
                     body: formData
                 });
-                if (!response.ok) throw new Error('Erreur');
+                
+                if (!response.ok) throw new Error('Erreur API');
+                
                 const data = await response.json();
                 updateUI(data.model_response);
             } catch (error) {
-                alert("Erreur API.");
+                alert("Erreur lors de l'analyse. Veuillez réessayer.");
+                console.error(error);
             } finally {
                 analyzeBtn.disabled = false;
                 document.getElementById('btnIcon').innerHTML = '🔍';
@@ -241,43 +501,73 @@
             }
         });
 
+        // Update UI with Results
         function updateUI(res) {
             document.getElementById('resultPlaceholder').style.display = 'none';
             document.getElementById('resultContent').classList.add('show');
 
-            // Score et Cercle
-            const score = res.score;
-            const circle = document.getElementById('progressCircle');
-            const offset = 502.4 - (score / 100) * 502.4;
-            circle.style.strokeDashoffset = offset;
-            
-            const color = score > 80 ? '#27ae60' : (score > 50 ? '#f39c12' : '#e74c3c');
-            circle.style.stroke = color;
-            document.getElementById('scoreValue').style.color = color;
-            animateValue("scoreValue", 0, score, 1500);
+            const score = res.score || 0;
+            const var_seuil =  70
+            const isSuccess = score >= var_seuil;
 
-            // Badge
-            const badge = document.getElementById('statusBadgeContainer');
-            badge.innerHTML = score >= 80 
-                ? `<span class="status-badge success">✓ Authentique</span>`
-                : `<span class="status-badge warning">⚠️ À vérifier</span>`;
-
-            // Textes
-            document.getElementById('resDocType').textContent = res.type_document;
-            document.getElementById('resDate').textContent = res.date_analyse;
-            document.getElementById('resChecks').textContent = res.verification_number + ' points de contrôle';
+            // Status Card
+            const statusCard = document.getElementById('statusCard');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusSubtitle = document.getElementById('statusSubtitle');
+            const confidenceValue = document.getElementById('confidenceValue');
             
-            // JUSTIFICATION (La modification clé est ici)
-            document.getElementById('resJustify').textContent = res.justify || "Aucune justification fournie.";
+            if (isSuccess) {
+                statusCard.classList.add('success');
+                statusIcon.classList.add('success');
+                statusIcon.textContent = '✓';
+                statusTitle.textContent = 'Document Authentique';
+                statusSubtitle.textContent = 'Aucune anomalie apparente détectée';
+                confidenceValue.classList.add('success');
+            } else {
+                statusCard.classList.remove('success');
+                statusIcon.classList.remove('success');
+                statusIcon.textContent = '✕';
+                statusTitle.textContent = 'Document Non Conforme';
+                statusSubtitle.textContent = 'Des anomalies ont été détectées sur ce document';
+                confidenceValue.classList.remove('success');
+            }
+
+            // Animate Confidence Badge
+            animateValue("confidenceValue", 0, score, 1500, '%');
+
+            // Confidence Bar
+            const confidenceFill = document.getElementById('confidenceFill');
+            const confidencePercent = document.getElementById('confidencePercent');
+            
+            if (isSuccess) {
+                confidenceFill.classList.add('success');
+            } else {
+                confidenceFill.classList.remove('success');
+            }
+            
+            setTimeout(() => {
+                confidenceFill.style.width = score + '%';
+            }, 100);
+            
+            animateValue("confidencePercent", 0, score, 1500, '%');
+
+            // Extracted Information
+            document.getElementById('infoName').textContent = res.extracted_data?.name || res.info.nom || 'Non détecté';
+            document.getElementById('infoSurname').textContent = res.extracted_data?.name || res.info.prenoms || 'Non détecté';
+            document.getElementById('infoBirth').textContent = res.extracted_data?.birth_date || res.info.date_naissance || 'Non détecté';
+            document.getElementById('infoNumber').textContent = res.extracted_data?.document_number || res.info.numero_doc || 'Non détecté';
+            document.getElementById('infoExpiry').textContent = res.extracted_data?.expiry_date || res.info.date_expiration || 'Non détecté';
         }
 
-        function animateValue(id, start, end, duration) {
+        // Animate Number Values
+        function animateValue(id, start, end, duration, suffix = '') {
             const obj = document.getElementById(id);
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start) + "%";
+                obj.textContent = Math.floor(progress * (end - start) + start) + suffix;
                 if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
