@@ -218,10 +218,8 @@ def analyse_passeport_file(
     filename: str,
     lm_studio_url: str,
     pdf_scale: float = 2.0,
-    seuil_score: int = 75, 
     doc_type: str = "Passeport"
 ):
-
     ext = os.path.splitext(filename)[1].lower()
 
     # PDF → images

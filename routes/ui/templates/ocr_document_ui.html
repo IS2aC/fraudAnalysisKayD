@@ -232,10 +232,9 @@
                         <span class="dropdown-arrow">▼</span>
                     </div>
                     <div id="docTypeMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e0e0e0; border-radius: 8px; margin-top: 5px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <div class="doc-option" data-value="Carte Nationale d'Identité">Carte Nationale d'Identité</div>
-                        <div class="doc-option" data-value="Passeport">Passeport</div>
-                        <div class="doc-option" data-value="Permis de Conduire">Permis de Conduire</div>
-                        <div class="doc-option" data-value="Carte de Séjour">Carte de Séjour</div>
+                        <div class="doc-option" data-value="cni">Carte Nationale d'Identité</div>
+                        <div class="doc-option" data-value="passeport">Passeport</div>
+                        <div class="doc-option" data-value="permis">Permis de Conduire</div>
                     </div>
                 </div>
             </div>
@@ -393,19 +392,30 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const analyzeBtn = document.getElementById('analyzeBtn');
-        const selectedDocType = document.getElementById('selectedDocType');
+        const selectedDocTypeEl = document.getElementById('selectedDocType');
         let selectedFile = null;
+        let selectedDocTypeValue = 'cni'; // VALEUR PAR DÉFAUT
 
         // Document Type Dropdown
-        document.getElementById('docTypeSelector').addEventListener('click', () => {
+        document.getElementById('docTypeSelector').addEventListener('click', (e) => {
+            e.stopPropagation();
             const menu = document.getElementById('docTypeMenu');
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         });
 
         document.querySelectorAll('.doc-option').forEach(opt => {
             opt.addEventListener('click', (e) => {
-                selectedDocType.textContent = e.target.textContent;
+                e.stopPropagation();
+                selectedDocTypeValue = e.currentTarget.getAttribute('data-value');
+                selectedDocTypeEl.textContent = e.currentTarget.textContent.trim();
                 document.getElementById('docTypeMenu').style.display = 'none';
+                
+                // Reset UI si un fichier est déjà chargé
+                if (selectedFile) {
+                    analyzeBtn.disabled = false;
+                }
+                
+                console.log('Type sélectionné:', selectedDocTypeValue);
             });
         });
 
@@ -419,42 +429,68 @@
         // File Upload Handlers
         document.getElementById('browseLink').addEventListener('click', (e) => { 
             e.preventDefault(); 
+            e.stopPropagation();
             fileInput.click(); 
         });
 
         document.getElementById('uploadArea').addEventListener('click', (e) => { 
-            if(e.target.id !== 'browseLink') fileInput.click(); 
+            if (!e.target.closest('.file-preview') && e.target.id !== 'removeFile') {
+                fileInput.click(); 
+            }
         });
 
         // Drag and Drop
         const uploadArea = document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
+        ['dragover', 'dragenter'].forEach(event => {
+            uploadArea.addEventListener(event, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('dragover');
+            });
         });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
+        ['dragleave', 'dragend'].forEach(event => {
+            uploadArea.addEventListener(event, () => {
+                uploadArea.classList.remove('dragover');
+            });
         });
 
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             uploadArea.classList.remove('dragover');
-            if(e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
             }
         });
 
         fileInput.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) handleFile(e.target.files[0]);
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
         });
 
         function handleFile(file) {
+            // Validation du fichier
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|pdf)$/i)) {
+                alert('Veuillez sélectionner un fichier JPG, PNG ou PDF');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                alert('Le fichier ne doit pas dépasser 10MB');
+                return;
+            }
+
             selectedFile = file;
             document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+            document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
             document.getElementById('filePreview').classList.add('show');
-            analyzeBtn.disabled = false;
+            
+            // Activer le bouton seulement si un type de document est sélectionné
+            analyzeBtn.disabled = !selectedDocTypeValue;
         }
 
         document.getElementById('removeFile').addEventListener('click', (e) => {
@@ -463,51 +499,101 @@
             fileInput.value = '';
             document.getElementById('filePreview').classList.remove('show');
             analyzeBtn.disabled = true;
+            // Reset résultats
             document.getElementById('resultContent').classList.remove('show');
             document.getElementById('resultPlaceholder').style.display = 'block';
         });
 
+        // Fonction d'animation des valeurs
+        function animateValue(elementId, start, end, duration, suffix = '') {
+            const element = document.getElementById(elementId);
+            let startTime = null;
+            const step = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                const currentValue = Math.floor(progress * (end - start) + start);
+                element.textContent = currentValue + suffix;
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+            };
+            requestAnimationFrame(step);
+        }
+
         // Analyze Button
         analyzeBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
+            // Double vérification
+            if (!selectedFile) {
+                alert("Veuillez sélectionner un fichier");
+                return;
+            }
+            
+            if (!selectedDocTypeValue) {
+                alert("Veuillez sélectionner un type de document");
+                return;
+            }
 
             analyzeBtn.disabled = true;
-            document.getElementById('btnIcon').innerHTML = '⏳';
-            document.getElementById('btnIcon').classList.add('loading');
-            document.getElementById('btnText').textContent = 'Analyse en cours...';
+            const btnIcon = document.getElementById('btnIcon');
+            const btnText = document.getElementById('btnText');
+            
+            btnIcon.innerHTML = '⏳';
+            btnIcon.classList.add('loading');
+            btnText.textContent = 'Analyse en cours...';
 
             const formData = new FormData();
             formData.append('file', selectedFile);
-            formData.append('type_document', selectedDocType.textContent);
+            formData.append('type_document', selectedDocTypeValue);
+
+            console.log('Envoi vers API:', {
+                type: selectedDocTypeValue,
+                filename: selectedFile.name,
+                size: selectedFile.size
+            });
 
             try {
                 const response = await fetch('/ai-api/ocr_document', {
                     method: 'POST',
                     body: formData
                 });
-                
-                if (!response.ok) throw new Error('Erreur API');
-                
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erreur API ${response.status}: ${errorText}`);
+                }
+
                 const data = await response.json();
+                
+                // Vérification de la structure de la réponse
+                if (!data || !data.model_response) {
+                    throw new Error('Réponse API invalide');
+                }
+
                 updateUI(data.model_response);
+                
             } catch (error) {
-                alert("Erreur lors de l'analyse. Veuillez réessayer.");
-                console.error(error);
+                console.error('Erreur complète:', error);
+                alert(`Erreur lors de l'analyse: ${error.message}`);
             } finally {
+                // Reset bouton
                 analyzeBtn.disabled = false;
-                document.getElementById('btnIcon').innerHTML = '🔍';
-                document.getElementById('btnIcon').classList.remove('loading');
-                document.getElementById('btnText').textContent = 'Analyser le document';
+                btnIcon.innerHTML = '🔍';
+                btnIcon.classList.remove('loading');
+                btnText.textContent = 'Analyser le document';
             }
         });
 
-        // Update UI with Results
+        // Update UI with Results - CORRIGÉ
         function updateUI(res) {
+            console.log('Données reçues:', res); // Debug
+            
             document.getElementById('resultPlaceholder').style.display = 'none';
             document.getElementById('resultContent').classList.add('show');
 
-            const score = res.score || 0;
-            const var_seuil =  70
+            // Gestion sécurisée des données
+            const score = parseFloat(res.score) || 0;
+            const extractedData = res.extracted_data || {};
+            const var_seuil = 70;
             const isSuccess = score >= var_seuil;
 
             // Status Card
@@ -515,8 +601,14 @@
             const statusIcon = document.getElementById('statusIcon');
             const statusTitle = document.getElementById('statusTitle');
             const statusSubtitle = document.getElementById('statusSubtitle');
+            const statusVerifNumber = document.getElementById('statusVerifNumber');
             const confidenceValue = document.getElementById('confidenceValue');
             
+            // Reset classes
+            statusCard.classList.remove('success');
+            statusIcon.classList.remove('success');
+            confidenceValue.classList.remove('success');
+
             if (isSuccess) {
                 statusCard.classList.add('success');
                 statusIcon.classList.add('success');
@@ -524,53 +616,40 @@
                 statusTitle.textContent = 'Document Authentique';
                 statusSubtitle.textContent = 'Aucune anomalie apparente détectée';
                 confidenceValue.classList.add('success');
+                statusVerifNumber.textContent = '5 vérifications réalisées';
             } else {
-                statusCard.classList.remove('success');
-                statusIcon.classList.remove('success');
                 statusIcon.textContent = '✕';
                 statusTitle.textContent = 'Document Non Conforme';
-                statusSubtitle.textContent = 'Des anomalies ont été détectées sur ce document';
-                confidenceValue.classList.remove('success');
+                statusSubtitle.textContent = 'Des anomalies ont été détectées';
+                statusVerifNumber.textContent = '3 vérifications échouées';
             }
 
             // Animate Confidence Badge
-            animateValue("confidenceValue", 0, score, 1500, '%');
+            animateValue("confidenceValue", 0, Math.round(score), 1500, '%');
 
             // Confidence Bar
             const confidenceFill = document.getElementById('confidenceFill');
             const confidencePercent = document.getElementById('confidencePercent');
             
+            confidenceFill.classList.remove('success');
             if (isSuccess) {
                 confidenceFill.classList.add('success');
-            } else {
-                confidenceFill.classList.remove('success');
             }
             
+            confidencePercent.textContent = Math.round(score) + '%';
+
+            // Animation de la barre de confiance
+            confidenceFill.style.width = '0%';
             setTimeout(() => {
                 confidenceFill.style.width = score + '%';
             }, 100);
-            
-            animateValue("confidencePercent", 0, score, 1500, '%');
 
-            // Extracted Information
-            document.getElementById('infoName').textContent = res.extracted_data?.name || res.info.nom || 'Non détecté';
-            document.getElementById('infoSurname').textContent = res.extracted_data?.name || res.info.prenoms || 'Non détecté';
-            document.getElementById('infoBirth').textContent = res.extracted_data?.birth_date || res.info.date_naissance || 'Non détecté';
-            document.getElementById('infoNumber').textContent = res.extracted_data?.document_number || res.info.numero_doc || 'Non détecté';
-            document.getElementById('infoExpiry').textContent = res.extracted_data?.expiry_date || res.info.date_expiration || 'Non détecté';
-        }
-
-        // Animate Number Values
-        function animateValue(id, start, end, duration, suffix = '') {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.textContent = Math.floor(progress * (end - start) + start) + suffix;
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
+            // Remplir les informations extraites
+            document.getElementById('infoName').textContent = res.info.nom || 'Non détecté';
+            document.getElementById('infoSurname').textContent = res.info.prenom || 'Non détecté';
+            document.getElementById('infoBirth').textContent = res.info.date_naissance || 'Non détecté';
+            document.getElementById('infoNumber').textContent = res.info.numero_doc || 'Non détecté';
+            document.getElementById('infoExpiry').textContent = res.info.date_expiration || 'Non détecté';
         }
     </script>
 </body>

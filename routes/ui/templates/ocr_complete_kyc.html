@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DocVerify - Formulaire KYC</title>
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#f6f7fb;
+}
+
+/* Layout */
+.page{
+  min-height:100vh;
+  display:flex;
+}
+
+/* LEFT PANEL */
+.left{
+  width:40%;
+  background:linear-gradient(135deg,#f4ac4f,#131009);
+  color:white;
+  display:none;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:50px;
+  position:relative;
+  overflow:hidden;
+}
+
+.left .circle{
+  position:absolute;
+  background:white;
+  opacity:0.05;
+  border-radius:50%;
+}
+
+.left .c1{ width:300px;height:300px; top:-60px; left:-60px;}
+.left .c2{ width:400px;height:400px; bottom:-120px; right:-100px;}
+.left .c3{ width:150px;height:150px; top:40%; right:40px;}
+
+.left h2{
+  font-size:42px;
+  margin:0 0 20px 0;
+}
+
+.left p{
+  font-size:16px;
+  max-width:350px;
+}
+
+/* RIGHT PANEL */
+.right{
+  flex:1;
+  background:white;
+  padding:30px 20px 60px;
+  overflow-y:auto;
+}
+
+/* Sections  */
+.section-title{
+  display:flex;
+  align-items:center;
+  font-weight:bold;
+  margin-bottom:10px;
+  gap:6px;
+}
+
+form{
+  max-width:900px;
+  margin:0 auto;
+}
+
+label{
+  font-size:14px;
+  font-weight:600;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #d5d8e0;
+  margin-top:6px;
+  margin-bottom:14px;
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:#f4ac4f;
+  box-shadow:0 0 0 2px rgba(107,0,255,.15);
+}
+
+/* grid */
+.row{
+  display:grid;
+  gap:16px;
+}
+
+@media(min-width:800px){
+  .left{display:flex;}
+  .row-2{ grid-template-columns:1fr 1fr;}
+}
+
+/* submit button */
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  background:linear-gradient(135deg,#f4ac4f,#131009);
+  color:white;
+}
+
+button:hover{
+  opacity:.9;
+  transform:scale(1.01);
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
+
+    <div>
+      <h1>DocVerify</h1>
+      <p>Vérification KYC</p>
+    </div>
+
+    <div>
+      <h2>Vérification<br>KYC Client</h2>
+      <p>
+        Complétez ce formulaire pour démarrer le processus de vérification de votre entreprise.
+      </p>
+
+      <ul>
+        <li>✔ Sécurisé</li>
+        <li>✔ Confidentiel</li>
+        <li>✔ Rapide</li>
+      </ul>
+    </div>
+
+    <p>© 2025 DocVerify. Tous droits réservés.</p>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+
+    <h2>Formulaire KYC</h2>
+    <p>Renseignez les informations de votre entreprise.</p>
+
+    <form id="kycForm">
+
+      <!-- ENTREPRISE -->
+      <div class="section-title">Informations de l'entreprise</div>
+
+      <label>Nom de l'entreprise *</label>
+      <input id="companyName" required placeholder="Nom de l'entreprise">
+
+      <div class="row row-2">
+        <div>
+          <label>Email *</label>
+          <input id="email" type="email" required placeholder="contact@exemple.com">
+        </div>
+
+        <div>
+          <label>Site web</label>
+          <input id="website" placeholder="www.exemple.com">
+        </div>
+      </div>
+
+      <div class="row row-2">
+        <div>
+          <label>Secteur d'activité *</label>
+          <select id="sector" required>
+            <option value="">Sélectionnez</option>
+            <option>Commerce de détail</option>
+            <option>Services financiers</option>
+            <option>Technologie</option>
+            <option>Immobilier</option>
+            <option>Transport & Logistique</option>
+            <option>Santé</option>
+            <option>Éducation</option>
+            <option>Hôtellerie & Restauration</option>
+            <option>Construction</option>
+            <option>Agriculture</option>
+            <option>Autre</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Chiffre d'affaires *</label>
+          <select id="revenue" required>
+            <option value="">Sélectionnez</option>
+            <option>Moins de 100 000 €</option>
+            <option>100 000 € - 500 000 €</option>
+            <option>500 000 € - 1 000 000 €</option>
+            <option>1 000 000 € - 5 000 000 €</option>
+            <option>Plus de 5 000 000 €</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row row-2">
+        <div>
+          <label>Numéro RCCM *</label>
+          <input id="registrationNumber" required placeholder="Ex : CI-XXXXXX">
+        </div>
+
+        <div>
+          <label>Pays *</label>
+          <select id="country" required>
+            <option value="">Sélectionnez</option>
+            <option>Côte d'Ivoire</option>
+            <option>Sénégal</option>
+            <option>Mali</option>
+            <option>Burkina Faso</option>
+            <option>Cameroun</option>
+            <option>Togo</option>
+            <option>Bénin</option>
+            <option>Niger</option>
+            <option>Guinée</option>
+            <option>France</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- REPRESENTANT -->
+      <div class="section-title">Représentant légal</div>
+
+      <div class="row row-2">
+        <div>
+          <label>Nom & Prénoms *</label>
+          <input id="repName" required>
+        </div>
+
+        <div>
+          <label>Téléphone *</label>
+          <input id="repPhone" required placeholder="+225 XX XX XX XX XX">
+        </div>
+      </div>
+
+      <label>Fonction *</label>
+      <input id="repFunction" required placeholder="Ex : Directeur Général">
+
+      <button type="submit">Soumettre la demande KYC</button>
+
+      <p style="font-size:12px;text-align:center;margin-top:10px;">
+        En soumettant, vous acceptez nos conditions d'utilisation.
+      </p>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.getElementById("kycForm").addEventListener("submit", function(e){
+  e.preventDefault();
+
+  const data = {
+    companyName: companyName.value,
+    email: email.value,
+    website: website.value,
+    sector: sector.value,
+    revenue: revenue.value,
+    registrationNumber: registrationNumber.value,
+    country: country.value,
+    representativeName: repName.value,
+    representativePhone: repPhone.value,
+    representativeFunction: repFunction.value
+  };
+
+  console.log("KYC FORM DATA:", data);
+  alert("Formulaire soumis — regardez la console !");
+});
+</script>
+
+</body>
+</html>

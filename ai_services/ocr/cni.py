@@ -467,7 +467,7 @@ def analyse_cni_file(
     verif_number = 3 # nombre de verification (Verif sur le numero de cni, sur la date de naissance, date d'emission )
     justify =  "Document acceptable aux standards de Passeport Internationaux" if verif_number > seuil_score else "Document Non-Conforme !"
 
-
+    
     return  {
             "rapport":None, 
             "score":score, 

@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Request
-from routes.ui import ocr_document_ui, home
+from routes.ui import ocr_document_ui, home, ocr_complete
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import HTMLResponse
 from routes.api import ocr
 
 
 app = FastAPI(
-    title="API - IA Endpoint Creallia",
+    title="API - IA ",
     description = """
         API-IA solution support pour une application d'analyse et de detections de transactions fauduleuses.
     """,
@@ -30,6 +30,7 @@ async def not_found_page(request: Request, exc: StarletteHTTPException):
 # UI   ENDPOINTS ############
 app.include_router(ocr_document_ui.router)
 app.include_router(home.router)
+app.include_router(ocr_complete.router)
 #############################
 
 # API ENDPOINTS ############

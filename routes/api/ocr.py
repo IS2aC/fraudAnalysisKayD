@@ -2,6 +2,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Form
 from ai_services.ocr.cni import analyse_cni_file
 from ai_services.ocr.passeport import analyse_passeport_file
+from ai_services.ocr.rccm import analyse_rccm
+from ai_services.ocr.permis_conduire import analyse_passeport_permis_conduire
 from datetime import datetime
 
 router = APIRouter(
@@ -29,7 +31,9 @@ async def analyse(type_document: str = Form(...), file: UploadFile = File(...)):
         # Lecture du fichier
         file_bytes = await file.read()
 
-        if "Carte Nationale d'Identité" in  doc_type:
+        print(f'>>>> {doc_type} <<<<')
+
+        if "cni" in  doc_type:
             # Appel OCR
             analyse_result = analyse_cni_file(
                 file_bytes=file_bytes,
@@ -38,16 +42,29 @@ async def analyse(type_document: str = Form(...), file: UploadFile = File(...)):
                 lm_studio_url =  LMSTUDIO_BASE_URL
             )
 
-        else :  
+        elif "passeport" in doc_type:  
             analyse_result =  analyse_passeport_file(
                 file_bytes=file_bytes,
                 filename=file.filename,
                 pdf_scale= 2.0,
                 lm_studio_url=LMSTUDIO_BASE_URL
             )
-            
+        elif "rccm" in doc_type:
+            analyse_result =  analyse_rccm(
+                file_bytes=file_bytes, 
+                filename=file.filename,
+                pdf_scale=2.0,
+                lm_studio_url= LMSTUDIO_BASE_URL
+            )
+        else:
+            analyse_result = analyse_passeport_permis_conduire(
+                file_bytes = file_bytes,
+                filename=file.filename,
+                pdf_scale=2.0,
+                lm_studio_url= LMSTUDIO_BASE_URL
+            )
 
-
+        
         # Réponse OK
         return {
             "code": 200,
